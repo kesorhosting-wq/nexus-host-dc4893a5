@@ -1,1 +1,19 @@
 project_id = "cebhteyhrcdsfhiwozfp"
+
+[functions.pterodactyl]
+verify_jwt = false
+
+[functions.bakong-qr]
+verify_jwt = false
+
+[functions.bakong-webhook]
+verify_jwt = false
+
+[functions.bakong-test]
+verify_jwt = false
+
+[functions.invoice-generator]
+verify_jwt = false
+
+[functions.renewal-reminder]
+verify_jwt = false
