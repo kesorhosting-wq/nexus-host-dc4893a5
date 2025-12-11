@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useGameStore, Game, GamePlan, Hardware, HeroStat } from "@/store/gameStore";
-import { Plus, Trash2, Save, Gamepad2, HardDrive, MapPin, X, LogOut, Shield, Link, Palette, Sparkles, Home, Server } from "lucide-react";
+import { Plus, Trash2, Save, Gamepad2, HardDrive, MapPin, X, LogOut, Shield, Link, Palette, Sparkles, Home, Server, CreditCard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useBranding } from "@/hooks/useBranding";
@@ -15,6 +15,8 @@ import HeroStatsEditor from "@/components/admin/HeroStatsEditor";
 import ThemeEditor from "@/components/admin/ThemeEditor";
 import PterodactylConfig from "@/components/admin/PterodactylConfig";
 import PlanPterodactylEditor from "@/components/admin/PlanPterodactylEditor";
+import BakongConfig from "@/components/admin/BakongConfig";
+import RenewalReminders from "@/components/admin/RenewalReminders";
 
 const Admin = () => {
   const { toast } = useToast();
@@ -27,7 +29,7 @@ const Admin = () => {
     updateLocation, updateSeasonalTheme, updateBrand 
   } = useGameStore();
   
-  const [activeTab, setActiveTab] = useState<"games" | "hardware" | "locations" | "themes" | "brand" | "pterodactyl">("games");
+  const [activeTab, setActiveTab] = useState<"games" | "hardware" | "locations" | "themes" | "brand" | "pterodactyl" | "billing">("games");
   const [editingGame, setEditingGame] = useState<Game | null>(null);
   const [newGame, setNewGame] = useState<Partial<Game>>({ name: "", description: "", icon: "🎮", enabled: true, plans: [] });
   const [newPlan, setNewPlan] = useState<Partial<GamePlan>>({ name: "", ram: "", cpu: "", storage: "", slots: "", price: 0, orderLink: "" });
@@ -234,6 +236,14 @@ const Admin = () => {
             >
               <Server className="w-4 h-4" />
               Pterodactyl
+            </Button>
+            <Button
+              variant={activeTab === "billing" ? "default" : "outline"}
+              onClick={() => setActiveTab("billing")}
+              className="gap-2 whitespace-nowrap"
+            >
+              <CreditCard className="w-4 h-4" />
+              Billing
             </Button>
           </div>
         </div>
@@ -801,6 +811,14 @@ const Admin = () => {
                 ))}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Billing Tab */}
+        {activeTab === "billing" && (
+          <div className="space-y-6">
+            <BakongConfig />
+            <RenewalReminders />
           </div>
         )}
       </div>
