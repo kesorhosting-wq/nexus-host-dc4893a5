@@ -1,0 +1,247 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap');
+
+@layer base {
+  /* Premium Silver - Light Theme */
+  :root {
+    --background: 220 20% 97%;
+    --foreground: 220 20% 15%;
+
+    --card: 220 15% 95%;
+    --card-foreground: 220 20% 15%;
+
+    --popover: 220 20% 98%;
+    --popover-foreground: 220 20% 15%;
+
+    --primary: 220 15% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 10% 90%;
+    --secondary-foreground: 220 20% 20%;
+
+    --muted: 220 10% 92%;
+    --muted-foreground: 220 10% 45%;
+
+    --accent: 220 20% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 85%;
+    --input: 220 15% 85%;
+    --ring: 220 15% 45%;
+
+    --radius: 1rem;
+
+    /* Premium Silver tokens */
+    --neon: 220 20% 50%;
+    --neon-glow: 220 25% 60%;
+    --cyber-purple: 250 30% 55%;
+    --cyber-blue: 210 40% 55%;
+    
+    --sidebar-background: 220 15% 95%;
+    --sidebar-foreground: 220 20% 15%;
+    --sidebar-primary: 220 15% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 10% 90%;
+    --sidebar-accent-foreground: 220 20% 15%;
+    --sidebar-border: 220 15% 85%;
+    --sidebar-ring: 220 15% 45%;
+  }
+
+  /* Premium Gold - Dark Theme */
+  .dark {
+    --background: 30 15% 5%;
+    --foreground: 45 30% 95%;
+    
+    --card: 30 15% 8%;
+    --card-foreground: 45 30% 95%;
+    
+    --popover: 30 15% 8%;
+    --popover-foreground: 45 30% 95%;
+    
+    --primary: 45 80% 50%;
+    --primary-foreground: 30 20% 8%;
+    
+    --secondary: 30 15% 15%;
+    --secondary-foreground: 45 30% 90%;
+    
+    --muted: 30 10% 18%;
+    --muted-foreground: 45 15% 55%;
+    
+    --accent: 35 70% 45%;
+    --accent-foreground: 45 30% 95%;
+    
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --border: 30 12% 20%;
+    --input: 30 12% 20%;
+    --ring: 45 80% 50%;
+
+    /* Premium Gold tokens */
+    --neon: 45 90% 55%;
+    --neon-glow: 45 100% 65%;
+    --cyber-purple: 35 80% 50%;
+    --cyber-blue: 40 70% 45%;
+    
+    --sidebar-background: 30 15% 5%;
+    --sidebar-foreground: 45 30% 95%;
+    --sidebar-primary: 45 80% 50%;
+    --sidebar-primary-foreground: 30 20% 8%;
+    --sidebar-accent: 30 15% 15%;
+    --sidebar-accent-foreground: 45 30% 90%;
+    --sidebar-border: 30 12% 20%;
+    --sidebar-ring: 45 80% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(var(--neon)), hsl(var(--cyber-purple)), hsl(var(--cyber-blue)));
+  }
+
+  .text-gradient-alt {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)));
+  }
+
+  .glow-neon {
+    box-shadow: 0 0 20px hsl(var(--neon) / 0.5),
+                0 0 40px hsl(var(--neon) / 0.3),
+                0 0 60px hsl(var(--neon) / 0.1);
+  }
+
+  .glow-purple {
+    box-shadow: 0 0 20px hsl(var(--cyber-purple) / 0.5),
+                0 0 40px hsl(var(--cyber-purple) / 0.3);
+  }
+
+  .glass {
+    @apply bg-card/60 backdrop-blur-2xl border border-border/50;
+  }
+
+  .glass-hover {
+    @apply hover:bg-card/80 hover:border-primary/30 transition-all duration-500;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .animate-fade-up {
+    animation: fade-up 0.8s ease-out forwards;
+  }
+
+  .animate-fade-up-delay-1 {
+    animation: fade-up 0.8s ease-out 0.1s forwards;
+    opacity: 0;
+  }
+
+  .animate-fade-up-delay-2 {
+    animation: fade-up 0.8s ease-out 0.2s forwards;
+    opacity: 0;
+  }
+
+  .animate-fade-up-delay-3 {
+    animation: fade-up 0.8s ease-out 0.3s forwards;
+    opacity: 0;
+  }
+
+  .animate-slide-in {
+    animation: slide-in 0.6s ease-out forwards;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Grid pattern background */
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(to right, hsl(var(--border) / 0.15) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(var(--border) / 0.15) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+
+/* Dot pattern */
+.bg-dot-pattern {
+  background-image: radial-gradient(hsl(var(--border) / 0.3) 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+
+/* Premium orbs */
+.orb-neon {
+  @apply absolute rounded-full blur-3xl opacity-30;
+  background: radial-gradient(circle, hsl(var(--neon)) 0%, transparent 70%);
+}
+
+.orb-purple {
+  @apply absolute rounded-full blur-3xl opacity-25;
+  background: radial-gradient(circle, hsl(var(--cyber-purple)) 0%, transparent 70%);
+}
+
+.orb-blue {
+  @apply absolute rounded-full blur-3xl opacity-20;
+  background: radial-gradient(circle, hsl(var(--cyber-blue)) 0%, transparent 70%);
+}
+
+/* Cyber border effect */
+.cyber-border {
+  position: relative;
+}
+
+.cyber-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, hsl(var(--neon)), hsl(var(--cyber-purple)), hsl(var(--cyber-blue)));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
