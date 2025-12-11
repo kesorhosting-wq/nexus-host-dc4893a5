@@ -175,7 +175,7 @@ const PlanPterodactylEditor = ({ planId, planName, currentConfig, onSave }: Plan
           pterodactyl_limits: limits as any,
           pterodactyl_feature_limits: featureLimits as any,
         })
-        .eq("id", planId);
+        .eq("plan_id", planId);
 
       if (error) throw error;
 

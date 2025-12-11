@@ -34,7 +34,7 @@ const PterodactylConfig = () => {
       .from("server_integrations")
       .select("*")
       .eq("type", "pterodactyl")
-      .single();
+      .maybeSingle();
 
     if (data) {
       setExistingConfig(data);
