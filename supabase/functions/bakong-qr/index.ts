@@ -6,8 +6,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const BAKONG_MERCHANT_ID = Deno.env.get("BAKONG_MERCHANT_ID");
-const BAKONG_API_KEY = Deno.env.get("BAKONG_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
@@ -34,32 +32,34 @@ serve(async (req) => {
       .from("payment_gateways")
       .select("config")
       .eq("slug", "bakong")
-      .single();
+      .maybeSingle();
 
-    const config = gatewayConfig?.config as any || {};
-    const merchantId = BAKONG_MERCHANT_ID || config.merchantId || "merchant@bakong";
+    const config = (gatewayConfig?.config as Record<string, any>) || {};
+    const merchantId = config.merchantId || "merchant@bakong";
     const merchantName = config.merchantName || "GameHost";
     const merchantCity = config.merchantCity || "Phnom Penh";
+    const accountNumber = config.accountNumber || "";
 
     // Determine currency and amount
     const finalCurrency = currency || config.currency || "USD";
     let finalAmount = amount;
     
-    // Convert to KHR if needed
-    if (finalCurrency === "KHR" && currency === "USD") {
+    // Convert to KHR if configured
+    if (config.currency === "KHR" && currency === "USD") {
       finalAmount = Math.round(amount * USD_TO_KHR_RATE);
     }
 
-    // Generate KHQR payload
+    // Generate KHQR payload using proper EMVCo format
     const khqrPayload = {
       merchantId: merchantId,
       merchantName: merchantName,
       merchantCity: merchantCity,
       merchantCountry: "KH",
-      currency: finalCurrency,
-      amount: finalAmount.toFixed(finalCurrency === "KHR" ? 0 : 2),
-      transactionId: orderId,
-      additionalData: description || `Order ${orderId}`,
+      currency: config.currency || finalCurrency,
+      amount: finalAmount.toFixed(config.currency === "KHR" ? 0 : 2),
+      transactionId: orderId.substring(0, 25),
+      additionalData: description || `Order ${orderId.substring(0, 20)}`,
+      accountNumber: accountNumber,
     };
 
     // Generate QR code string (EMVCo format for KHQR)
@@ -72,7 +72,7 @@ serve(async (req) => {
     if (userId) {
       await supabase.from("payments").insert({
         amount: finalAmount,
-        currency: finalCurrency,
+        currency: config.currency || finalCurrency,
         status: "pending",
         invoice_id: invoiceId || null,
         user_id: userId,
@@ -89,9 +89,11 @@ serve(async (req) => {
         qrCode: qrCodeBase64,
         qrString: qrString,
         transactionId: orderId,
-        currency: finalCurrency,
+        currency: config.currency || finalCurrency,
         amount: finalAmount,
-        exchangeRate: finalCurrency === "KHR" ? USD_TO_KHR_RATE : null,
+        exchangeRate: config.currency === "KHR" && currency === "USD" ? USD_TO_KHR_RATE : null,
+        originalAmount: amount,
+        originalCurrency: currency,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -110,49 +112,51 @@ serve(async (req) => {
 });
 
 function generateKHQRString(payload: any): string {
-  // EMVCo QR Code format for KHQR
+  // EMVCo QR Code format for KHQR (Bakong standard)
   let qrString = "";
   
-  // Payload Format Indicator
+  // Payload Format Indicator (ID: 00)
   qrString += "000201";
   
-  // Point of Initiation Method (12 = Dynamic QR)
+  // Point of Initiation Method (ID: 01) - 12 = Dynamic QR
   qrString += "010212";
   
-  // Merchant Account Information (Tag 29 for KHQR)
-  const merchantInfo = 
-    "0016" + payload.merchantId + 
-    "0115" + payload.merchantName.substring(0, 15);
+  // Merchant Account Information (ID: 29 for KHQR)
+  // Contains merchant ID and acquiring bank
+  const bakongId = "0006bakong"; // Acquiring institution ID
+  const merchantAcct = payload.merchantId.length.toString().padStart(2, "0") + payload.merchantId;
+  const merchantInfo = bakongId + "01" + merchantAcct;
   qrString += "29" + merchantInfo.length.toString().padStart(2, "0") + merchantInfo;
   
-  // Merchant Category Code
+  // Merchant Category Code (ID: 52) - 5411 = Grocery/Retail
   qrString += "52045411";
   
-  // Transaction Currency (840 = USD, 116 = KHR)
+  // Transaction Currency (ID: 53) - 840 = USD, 116 = KHR
   const currencyCode = payload.currency === "USD" ? "840" : "116";
   qrString += "5303" + currencyCode;
   
-  // Transaction Amount
+  // Transaction Amount (ID: 54)
   const amountStr = payload.amount.toString();
   qrString += "54" + amountStr.length.toString().padStart(2, "0") + amountStr;
   
-  // Country Code
+  // Country Code (ID: 58)
   qrString += "5802KH";
   
-  // Merchant Name
+  // Merchant Name (ID: 59)
   const merchantName = payload.merchantName.substring(0, 25);
   qrString += "59" + merchantName.length.toString().padStart(2, "0") + merchantName;
   
-  // Merchant City
+  // Merchant City (ID: 60)
   const merchantCity = payload.merchantCity.substring(0, 15);
   qrString += "60" + merchantCity.length.toString().padStart(2, "0") + merchantCity;
   
-  // Additional Data (Reference/Bill Number)
-  const refNumber = payload.transactionId.substring(0, 25);
-  const additionalData = "05" + refNumber.length.toString().padStart(2, "0") + refNumber;
+  // Additional Data Field (ID: 62)
+  // Bill Number (sub-ID: 01)
+  const billNumber = payload.transactionId.substring(0, 25);
+  const additionalData = "01" + billNumber.length.toString().padStart(2, "0") + billNumber;
   qrString += "62" + additionalData.length.toString().padStart(2, "0") + additionalData;
   
-  // CRC placeholder
+  // CRC placeholder (ID: 63)
   qrString += "6304";
   
   // Calculate CRC16-CCITT
