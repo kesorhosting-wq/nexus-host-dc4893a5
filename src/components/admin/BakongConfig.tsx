@@ -248,10 +248,18 @@ const BakongConfig = () => {
             </div>
 
             <div className="p-4 bg-muted rounded-lg">
-              <p className="text-sm font-medium mb-2">API Credentials</p>
+              <p className="text-sm font-medium mb-2">Developer Token</p>
               <p className="text-xs text-muted-foreground">
-                BAKONG_MERCHANT_ID and BAKONG_API_KEY are stored as secure environment secrets.
-                Contact your administrator to update these values.
+                BAKONG_TOKEN is stored as a secure environment secret. Get your token from{" "}
+                <a 
+                  href="https://api-bakong.nbc.gov.kh/register" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary underline"
+                >
+                  api-bakong.nbc.gov.kh
+                </a>
+                . Token expires every 90 days.
               </p>
             </div>
 
