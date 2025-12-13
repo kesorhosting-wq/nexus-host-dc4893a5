@@ -196,7 +196,8 @@ const PlanPterodactylEditor = ({ planId, planName, currentConfig, onSave }: Plan
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
           <Settings2 className="w-4 h-4" />
-          Pterodactyl
+          <span className="hidden sm:inline">{planName}</span>
+          <span className="sm:hidden">Config</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">

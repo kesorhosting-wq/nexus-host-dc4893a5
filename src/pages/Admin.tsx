@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useGameStore, Game, GamePlan, Hardware, HeroStat } from "@/store/gameStore";
-import { Plus, Trash2, Save, Gamepad2, HardDrive, MapPin, X, LogOut, Shield, Palette, Sparkles, Home, Server, CreditCard, Loader2, Image } from "lucide-react";
+import { Plus, Trash2, Save, Gamepad2, HardDrive, MapPin, X, LogOut, Shield, Palette, Sparkles, Home, Server, CreditCard, Loader2, Image, GripVertical } from "lucide-react";
+import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useBranding } from "@/hooks/useBranding";
@@ -397,72 +398,110 @@ const Admin = () => {
                   </div>
 
                   <h3 className="font-display text-lg font-bold mb-4">Pricing Plans</h3>
-                  <div className="space-y-3 mb-6">
-                    {editingGame.plans.map((plan, index) => (
-                      <div key={plan.id} className="p-3 bg-muted rounded-lg border border-border">
-                        <div className="grid grid-cols-6 gap-2 items-center">
-                          <Input
-                            placeholder="Plan Name"
-                            value={plan.name}
-                            onChange={(e) => {
-                              const updatedPlans = [...editingGame.plans];
-                              updatedPlans[index] = { ...plan, name: e.target.value };
-                              setEditingGame({ ...editingGame, plans: updatedPlans });
-                            }}
-                            className="bg-background/50 border-border"
-                          />
-                          <Input
-                            placeholder="RAM"
-                            value={plan.ram}
-                            onChange={(e) => {
-                              const updatedPlans = [...editingGame.plans];
-                              updatedPlans[index] = { ...plan, ram: e.target.value };
-                              setEditingGame({ ...editingGame, plans: updatedPlans });
-                            }}
-                            className="bg-background/50 border-border"
-                          />
-                          <Input
-                            placeholder="CPU"
-                            value={plan.cpu}
-                            onChange={(e) => {
-                              const updatedPlans = [...editingGame.plans];
-                              updatedPlans[index] = { ...plan, cpu: e.target.value };
-                              setEditingGame({ ...editingGame, plans: updatedPlans });
-                            }}
-                            className="bg-background/50 border-border"
-                          />
-                          <Input
-                            placeholder="Storage"
-                            value={plan.storage}
-                            onChange={(e) => {
-                              const updatedPlans = [...editingGame.plans];
-                              updatedPlans[index] = { ...plan, storage: e.target.value };
-                              setEditingGame({ ...editingGame, plans: updatedPlans });
-                            }}
-                            className="bg-background/50 border-border"
-                          />
-                          <Input
-                            type="number"
-                            placeholder="Price"
-                            value={plan.price}
-                            onChange={(e) => {
-                              const updatedPlans = [...editingGame.plans];
-                              updatedPlans[index] = { ...plan, price: Number(e.target.value) };
-                              setEditingGame({ ...editingGame, plans: updatedPlans });
-                            }}
-                            className="bg-background/50 border-border"
-                          />
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleRemovePlan(plan.id)}
-                          >
-                            <Trash2 className="w-4 h-4 text-destructive" />
-                          </Button>
+                  <DragDropContext onDragEnd={(result: DropResult) => {
+                    if (!result.destination || !editingGame) return;
+                    const reordered = Array.from(editingGame.plans);
+                    const [removed] = reordered.splice(result.source.index, 1);
+                    reordered.splice(result.destination.index, 0, removed);
+                    setEditingGame({ ...editingGame, plans: reordered });
+                  }}>
+                    <Droppable droppableId="plans">
+                      {(provided) => (
+                        <div 
+                          {...provided.droppableProps} 
+                          ref={provided.innerRef}
+                          className="space-y-3 mb-6"
+                        >
+                          {editingGame.plans.map((plan, index) => (
+                            <Draggable key={plan.id} draggableId={plan.id} index={index}>
+                              {(provided, snapshot) => (
+                                <div 
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  className={`p-3 bg-muted rounded-lg border border-border ${snapshot.isDragging ? 'ring-2 ring-primary' : ''}`}
+                                >
+                                  <div className="grid grid-cols-8 gap-2 items-center">
+                                    <div {...provided.dragHandleProps} className="flex justify-center cursor-grab">
+                                      <GripVertical className="w-4 h-4 text-muted-foreground" />
+                                    </div>
+                                    <Input
+                                      placeholder="Plan Name"
+                                      value={plan.name}
+                                      onChange={(e) => {
+                                        const updatedPlans = [...editingGame.plans];
+                                        updatedPlans[index] = { ...plan, name: e.target.value };
+                                        setEditingGame({ ...editingGame, plans: updatedPlans });
+                                      }}
+                                      className="bg-background/50 border-border"
+                                    />
+                                    <Input
+                                      placeholder="RAM"
+                                      value={plan.ram}
+                                      onChange={(e) => {
+                                        const updatedPlans = [...editingGame.plans];
+                                        updatedPlans[index] = { ...plan, ram: e.target.value };
+                                        setEditingGame({ ...editingGame, plans: updatedPlans });
+                                      }}
+                                      className="bg-background/50 border-border"
+                                    />
+                                    <Input
+                                      placeholder="CPU"
+                                      value={plan.cpu}
+                                      onChange={(e) => {
+                                        const updatedPlans = [...editingGame.plans];
+                                        updatedPlans[index] = { ...plan, cpu: e.target.value };
+                                        setEditingGame({ ...editingGame, plans: updatedPlans });
+                                      }}
+                                      className="bg-background/50 border-border"
+                                    />
+                                    <Input
+                                      placeholder="Storage"
+                                      value={plan.storage}
+                                      onChange={(e) => {
+                                        const updatedPlans = [...editingGame.plans];
+                                        updatedPlans[index] = { ...plan, storage: e.target.value };
+                                        setEditingGame({ ...editingGame, plans: updatedPlans });
+                                      }}
+                                      className="bg-background/50 border-border"
+                                    />
+                                    <Input
+                                      placeholder="Slots"
+                                      value={plan.slots || ''}
+                                      onChange={(e) => {
+                                        const updatedPlans = [...editingGame.plans];
+                                        updatedPlans[index] = { ...plan, slots: e.target.value };
+                                        setEditingGame({ ...editingGame, plans: updatedPlans });
+                                      }}
+                                      className="bg-background/50 border-border"
+                                    />
+                                    <Input
+                                      type="number"
+                                      placeholder="Price"
+                                      value={plan.price}
+                                      onChange={(e) => {
+                                        const updatedPlans = [...editingGame.plans];
+                                        updatedPlans[index] = { ...plan, price: Number(e.target.value) };
+                                        setEditingGame({ ...editingGame, plans: updatedPlans });
+                                      }}
+                                      className="bg-background/50 border-border"
+                                    />
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => handleRemovePlan(plan.id)}
+                                    >
+                                      <Trash2 className="w-4 h-4 text-destructive" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
+                            </Draggable>
+                          ))}
+                          {provided.placeholder}
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      )}
+                    </Droppable>
+                  </DragDropContext>
 
                   <div className="grid grid-cols-3 gap-2 mb-2">
                     <Input
