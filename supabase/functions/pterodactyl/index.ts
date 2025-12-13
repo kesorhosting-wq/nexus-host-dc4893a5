@@ -251,6 +251,17 @@ async function createServer(
   // Find available allocation
   const allocation = await findAvailableAllocation(apiUrl, headers, planConfig?.pterodactyl_node_id);
 
+  // Default environment variables for common Minecraft eggs
+  const defaultEnvironment: Record<string, string> = {
+    SERVER_JARFILE: "server.jar",
+    VANILLA_VERSION: "latest",
+    MC_VERSION: "latest",
+    BUILD_TYPE: "recommended",
+    BUILD_NUMBER: "latest",
+    MINECRAFT_VERSION: "latest",
+    VERSION: "latest",
+  };
+
   const serverPayload = {
     name: serverName,
     user: pterodactylUser.id,
@@ -258,8 +269,7 @@ async function createServer(
     docker_image: dockerImage,
     startup: startup,
     environment: {
-      SERVER_JARFILE: "server.jar",
-      VANILLA_VERSION: "latest",
+      ...defaultEnvironment,
       ...environment,
     },
     limits: limits,
