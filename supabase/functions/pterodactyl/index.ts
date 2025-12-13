@@ -205,26 +205,41 @@ async function createServer(
   // Get order details
   const { data: order, error: orderError } = await supabase
     .from("orders")
-    .select("*, profiles:user_id(email)")
+    .select("*")
     .eq("id", orderId)
     .single();
 
   if (orderError || !order) {
+    console.error("Order lookup error:", orderError, "orderId:", orderId);
     throw new Error("Order not found");
   }
 
+  // Get user profile for email
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("email")
+    .eq("user_id", order.user_id)
+    .single();
+
+  // Handle cart format: server_details may have items array
+  const orderDetails = order.server_details || serverDetails || {};
+  const items = orderDetails.items || [orderDetails];
+  const firstItem = items[0] || {};
+
   // Get plan config with Pterodactyl settings
+  const planId = firstItem.plan_id || serverDetails?.plan_id;
   const { data: planConfig } = await supabase
     .from("game_plans")
     .select("*")
-    .eq("plan_id", serverDetails.plan_id)
-    .single();
+    .eq("plan_id", planId)
+    .maybeSingle();
 
   // Get or create Pterodactyl user
-  const userEmail = order.profiles?.email || `user-${order.user_id}@gamehost.com`;
+  const userEmail = profile?.email || `user-${order.user_id}@gamehost.com`;
   const pterodactylUser = await getOrCreateUser(apiUrl, headers, userEmail);
 
   // Use plan config or defaults
+  const serverName = firstItem.server_name || firstItem.name || `Server-${orderId.slice(0, 8)}`;
   const eggId = planConfig?.pterodactyl_egg_id || 1;
   const nestId = planConfig?.pterodactyl_nest_id || 1;
   const limits = planConfig?.pterodactyl_limits || { memory: 1024, swap: 0, disk: 10240, io: 500, cpu: 100 };
@@ -237,7 +252,7 @@ async function createServer(
   const allocation = await findAvailableAllocation(apiUrl, headers, planConfig?.pterodactyl_node_id);
 
   const serverPayload = {
-    name: serverDetails.name || `Server-${orderId.slice(0, 8)}`,
+    name: serverName,
     user: pterodactylUser.id,
     egg: eggId,
     docker_image: dockerImage,
