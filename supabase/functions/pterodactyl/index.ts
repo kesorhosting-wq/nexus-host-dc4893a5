@@ -58,7 +58,32 @@ serve(async (req) => {
 
     switch (action) {
       case "create": {
-        const result = await createServer(config.apiUrl, apiHeaders, orderId, serverDetails, supabase);
+        // Use background task for server creation to avoid timeout
+        const createPromise = createServer(config.apiUrl, apiHeaders, orderId, serverDetails, supabase)
+          .catch(err => {
+            console.error("Background server creation failed:", err);
+            // Update order with error status
+            supabase.from("orders").update({ 
+              status: "failed",
+              notes: `Server creation failed: ${err.message}`
+            }).eq("id", orderId);
+          });
+        
+        // @ts-ignore - EdgeRuntime is available in Supabase Edge Functions
+        const runtime = (globalThis as any).EdgeRuntime;
+        if (runtime?.waitUntil) {
+          runtime.waitUntil(createPromise);
+          return new Response(JSON.stringify({ 
+            success: true, 
+            message: "Server provisioning started",
+            status: "provisioning"
+          }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        
+        // Fallback for environments without EdgeRuntime
+        const result = await createPromise;
         return new Response(JSON.stringify(result), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
