@@ -58,6 +58,12 @@ serve(async (req) => {
 
     switch (action) {
       case "create": {
+        // Set status to provisioning immediately
+        await supabase.from("orders").update({ 
+          status: "provisioning",
+          notes: "Server provisioning in progress..."
+        }).eq("id", orderId);
+        
         // Use background task for server creation to avoid timeout
         const createPromise = createServer(config.apiUrl, apiHeaders, orderId, serverDetails, supabase)
           .catch(err => {
