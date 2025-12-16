@@ -90,6 +90,21 @@ const ClientArea = () => {
     }
   }, [user]);
 
+  // Poll for provisioning orders every 10 seconds
+  useEffect(() => {
+    const hasProvisioningOrders = orders.some(order => 
+      order.status === 'provisioning' || order.status === 'paid'
+    );
+    
+    if (!hasProvisioningOrders) return;
+    
+    const interval = setInterval(() => {
+      fetchData();
+    }, 10000);
+    
+    return () => clearInterval(interval);
+  }, [orders]);
+
   const fetchData = async () => {
     const [ordersRes, invoicesRes, ticketsRes] = await Promise.all([
       supabase.from('orders').select('*, products(name, description)').order('created_at', { ascending: false }),
@@ -112,8 +127,10 @@ const ClientArea = () => {
     const statusConfig: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: any }> = {
       active: { variant: 'default', icon: CheckCircle2 },
       pending: { variant: 'secondary', icon: Clock },
+      provisioning: { variant: 'secondary', icon: Clock },
       suspended: { variant: 'destructive', icon: AlertCircle },
       cancelled: { variant: 'outline', icon: AlertCircle },
+      failed: { variant: 'destructive', icon: AlertCircle },
       paid: { variant: 'default', icon: CheckCircle2 },
       unpaid: { variant: 'destructive', icon: AlertCircle },
       open: { variant: 'default', icon: MessageSquare },

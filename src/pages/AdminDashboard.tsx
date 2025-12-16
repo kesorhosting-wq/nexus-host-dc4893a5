@@ -142,7 +142,7 @@ const AdminDashboard = () => {
   };
 
   const handleProvisionServer = async (order: Order) => {
-    if (order.status !== "paid" && order.status !== "active") {
+    if (order.status !== "paid" && order.status !== "active" && order.status !== "failed") {
       toast({ title: "Order must be paid first", variant: "destructive" });
       return;
     }
@@ -406,12 +406,14 @@ const AdminDashboard = () => {
                               <SelectContent>
                                 <SelectItem value="pending">Pending</SelectItem>
                                 <SelectItem value="paid">Paid</SelectItem>
+                                <SelectItem value="provisioning">Provisioning</SelectItem>
                                 <SelectItem value="active">Active</SelectItem>
+                                <SelectItem value="failed">Failed</SelectItem>
                                 <SelectItem value="suspended">Suspended</SelectItem>
                                 <SelectItem value="cancelled">Cancelled</SelectItem>
                               </SelectContent>
                             </Select>
-                            {!order.server_id && (order.status === "paid" || order.status === "active") && (
+                            {!order.server_id && (order.status === "paid" || order.status === "active" || order.status === "failed") && (
                               <Button
                                 size="sm"
                                 variant="outline"
